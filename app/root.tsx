@@ -102,10 +102,10 @@ export async function loader({context, request}: LoaderArgs) {
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
-  // const [mounted, setMounted] = useState(false);
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <html lang="en">
@@ -116,7 +116,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-      {data.page && (
+      {data.page && mounted && (
           <BuilderComponent model={'page-section'} content={data.page} />
       )}
         <ScrollRestoration />
