@@ -17,9 +17,6 @@ import resetStyles from './styles/reset.css';
 import appStyles from './styles/app.css';
 import {Layout} from '~/components/Layout';
 import tailwindCss from './styles/tailwind.css';
-import {builder, BuilderComponent} from '@builder.io/react';
-builder.init('5ff9122e249a486280d63ca7d5939ca0');
-import {useEffect, useState} from 'react';
 
 export function links() {
   return [
@@ -38,7 +35,7 @@ export function links() {
   ];
 }
 
-export async function loader({context, request}: LoaderArgs) {
+export async function loader({context}: LoaderArgs) {
   const {storefront, session, cart} = context;
   const customerAccessToken = await session.get('customerAccessToken');
   const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
@@ -68,25 +65,6 @@ export async function loader({context, request}: LoaderArgs) {
     },
   });
 
-  const page = await builder
-      .get('page-section', {
-        options: {
-          query: {
-            id: "948239e6de2c46a9bc356ef061981dd3",
-          },
-        },
-      })
-      .toPromise();
-
-  const isPreviewing = new URL(request.url).searchParams.has('builder.preview');
-  if (!page && !isPreviewing) {
-    throw new Response('Page Not Found', {
-      status: 404,
-
-      statusText:
-          "We couldn't find this page, please check your url path and if the page is published on Builder.io.",
-    });
-  }
   return defer(
     {
       cart: cartPromise,
@@ -94,7 +72,6 @@ export async function loader({context, request}: LoaderArgs) {
       header: await headerPromise,
       isLoggedIn,
       publicStoreDomain,
-      page,
     },
     {headers},
   );
@@ -102,10 +79,6 @@ export async function loader({context, request}: LoaderArgs) {
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <html lang="en">
@@ -116,9 +89,9 @@ export default function App() {
         <Links />
       </head>
       <body>
-      {data.page && mounted && (
-          <BuilderComponent model={'page-section'} content={data.page} />
-      )}
+        <Layout {...data}>
+          <Outlet />
+        </Layout>
         <ScrollRestoration />
         <Scripts />
       </body>
